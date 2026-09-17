@@ -1,0 +1,665 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Painel de Leads — MK FECOIMP 2026</title>
+<style>
+  :root{
+    --bg:#f4f6f9; --card:#ffffff; --card-2:#eef1f6; --text:#161a1f; --muted:#68727e;
+    --line:#dde2e9; --navy:#1f3864; --navy-soft:#e8edf7; --accent:#2563eb;
+    --ok:#15803d; --ok-bg:#dcfce7; --warn:#b45309; --warn-bg:#fef3c7; --bad:#b91c1c; --bad-bg:#fee2e2;
+    --c:#475569; --c-bg:#e2e8f0; --bar:#2563eb;
+    --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  }
+  @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+    --bg:#101317; --card:#181c21; --card-2:#20252b; --text:#e9ecef; --muted:#9aa4b0;
+    --line:#2d343c; --navy:#8fb0e8; --navy-soft:#1c2432; --accent:#7aa2f7;
+    --ok:#4ade80; --ok-bg:#14301f; --warn:#fbbf24; --warn-bg:#332611; --bad:#f87171; --bad-bg:#3a1717;
+    --c:#94a3b8; --c-bg:#252b33; --bar:#7aa2f7;
+  }}
+  :root[data-theme="dark"]{
+    --bg:#101317; --card:#181c21; --card-2:#20252b; --text:#e9ecef; --muted:#9aa4b0;
+    --line:#2d343c; --navy:#8fb0e8; --navy-soft:#1c2432; --accent:#7aa2f7;
+    --ok:#4ade80; --ok-bg:#14301f; --warn:#fbbf24; --warn-bg:#332611; --bad:#f87171; --bad-bg:#3a1717;
+    --c:#94a3b8; --c-bg:#252b33; --bar:#7aa2f7;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--text);font:15px/1.55 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
+  .wrap{max-width:1240px;margin:0 auto;padding:18px 16px 60px}
+
+  .top{display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between;margin-bottom:16px}
+  .brand{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+  .brand h1{font-size:19px;margin:0;color:var(--navy)}
+  .brand span{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;font-weight:700}
+  .actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+  button{font:inherit;cursor:pointer;border-radius:8px;border:1px solid var(--line);background:var(--card);color:var(--text);padding:8px 13px;transition:.12s}
+  button:hover{border-color:var(--accent)}
+  button.primary{background:var(--navy);border-color:var(--navy);color:#fff;font-weight:600}
+  @media (prefers-color-scheme:dark){:root:not([data-theme="light"]) button.primary{color:#0e1218}}
+  :root[data-theme="dark"] button.primary{color:#0e1218}
+  button:disabled{opacity:.5;cursor:default}
+  .stamp{font-size:12px;color:var(--muted)}
+
+  .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin-bottom:14px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:12px 14px}
+  .card .n{font-size:26px;font-weight:700;line-height:1.1}
+  .card .l{font-size:12px;color:var(--muted);margin-top:2px}
+  .card .s{font-size:11px;color:var(--muted);margin-top:4px}
+
+  .split{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px}
+  @media (max-width:760px){.split{grid-template-columns:1fr}}
+  .bd{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px 16px}
+  .bd h3{margin:0 0 2px;font-size:14px}
+  .bd .hint{font-size:11.5px;color:var(--muted);margin:0 0 10px}
+  .brow{display:flex;align-items:center;gap:10px;padding:5px 0;cursor:pointer;border-radius:6px}
+  .brow:hover{background:var(--navy-soft)}
+  .brow.sel{background:var(--navy-soft);box-shadow:inset 3px 0 0 var(--accent)}
+  .bname{flex:0 0 40%;font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .btrack{flex:1;height:8px;background:var(--card-2);border-radius:99px;overflow:hidden}
+  .bfill{height:100%;background:var(--bar);border-radius:99px}
+  .bnum{flex:0 0 58px;text-align:right;font-size:13px;font-variant-numeric:tabular-nums}
+  .bnum small{color:var(--muted)}
+
+  .source{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px 16px;margin-bottom:16px}
+  .source h3{margin:0 0 4px;font-size:14px}
+  .source p{margin:0 0 10px;font-size:13px;color:var(--muted)}
+  .drop{border:2px dashed var(--line);border-radius:8px;padding:18px;text-align:center;color:var(--muted);font-size:13px;cursor:pointer;transition:.12s}
+  .drop:hover,.drop.over{border-color:var(--accent);color:var(--accent);background:var(--navy-soft)}
+  .row{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:10px}
+  input[type=text],input[type=url],select{font:inherit;padding:7px 10px;border:1px solid var(--line);border-radius:8px;background:var(--card);color:var(--text)}
+  input[type=url]{flex:1;min-width:220px;font-family:var(--mono);font-size:12px}
+
+  .gen{margin-top:16px;padding-top:14px;border-top:1px solid var(--line)}
+  .gen h3{margin:0 0 2px;font-size:14px}
+  .gen p{margin:0 0 10px;font-size:12.5px;color:var(--muted)}
+  .lk{display:flex;align-items:center;gap:8px;padding:7px 0;border-top:1px solid var(--line);font-size:12.5px}
+  .lk:first-child{border-top:none}
+  .lk b{flex:0 0 96px}
+  .lk code{flex:1;font-size:11.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;background:var(--card-2);padding:4px 7px;border-radius:5px}
+  .lk button{padding:4px 10px;font-size:12px}
+  .filters{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;align-items:center}
+  .filters input[type=text]{flex:1;min-width:160px}
+  .clear{font-size:12px;color:var(--accent);background:none;border:none;padding:4px 6px}
+
+  .tablebox{background:var(--card);border:1px solid var(--line);border-radius:10px;overflow:hidden}
+  .scroll{overflow-x:auto}
+  table{border-collapse:collapse;width:100%;min-width:900px;font-size:13.5px}
+  th{background:var(--card-2);text-align:left;padding:10px 12px;font-weight:600;white-space:nowrap;cursor:pointer;user-select:none;border-bottom:1px solid var(--line)}
+  th:hover{color:var(--accent)}
+  th .ar{opacity:.4;font-size:10px}
+  td{padding:10px 12px;border-top:1px solid var(--line);vertical-align:top}
+  tbody tr{cursor:pointer}
+  tbody tr:hover td{background:var(--navy-soft)}
+  .empty{padding:40px 20px;text-align:center;color:var(--muted)}
+
+  .pill{display:inline-block;font-size:11px;font-weight:700;padding:2px 8px;border-radius:99px;white-space:nowrap}
+  .st-completo{background:var(--ok-bg);color:var(--ok)}
+  .st-parcial{background:var(--warn-bg);color:var(--warn)}
+  .st-abandonou{background:var(--c-bg);color:var(--c)}
+  .tagmini{display:inline-block;font-size:11px;padding:2px 7px;border-radius:5px;background:var(--card-2);border:1px solid var(--line);white-space:nowrap}
+  .flag{color:var(--bad);font-weight:700;font-size:11px;background:var(--bad-bg);padding:2px 6px;border-radius:5px;margin-left:5px;white-space:nowrap}
+  .dim{color:var(--muted);font-style:italic}
+
+  .overlay{position:fixed;inset:0;background:rgba(0,0,0,.45);display:none;z-index:50}
+  .overlay.on{display:block}
+  .panel{position:fixed;top:0;right:0;bottom:0;width:min(460px,100%);background:var(--bg);border-left:1px solid var(--line);z-index:51;transform:translateX(100%);transition:.2s;overflow-y:auto}
+  .panel.on{transform:translateX(0)}
+  .panel .ph{position:sticky;top:0;background:var(--bg);border-bottom:1px solid var(--line);padding:14px 18px;display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
+  .panel .ph h2{margin:0;font-size:17px;color:var(--navy)}
+  .panel .pb{padding:16px 18px 40px}
+  .dl{margin:0 0 18px}
+  .dl dt{font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);font-weight:700;margin-top:12px}
+  .dl dd{margin:2px 0 0}
+  .chips{display:flex;flex-wrap:wrap;gap:5px;margin-top:4px}
+  .chip{background:var(--card-2);border:1px solid var(--line);border-radius:6px;padding:2px 8px;font-size:12.5px}
+  .wa{display:inline-block;margin-top:10px;padding:8px 14px;background:var(--navy);color:#fff;border-radius:8px;text-decoration:none;font-weight:600;font-size:13.5px}
+  @media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .wa{color:#0e1218}}
+  :root[data-theme="dark"] .wa{color:#0e1218}
+
+  .msg{padding:10px 14px;border-radius:8px;font-size:13px;margin-bottom:12px;display:none}
+  .msg.on{display:block}
+  .msg.err{background:var(--bad-bg);color:var(--bad)}
+  .msg.ok{background:var(--ok-bg);color:var(--ok)}
+  @media (max-width:640px){.brand h1{font-size:17px}.card .n{font-size:22px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="top">
+    <div class="brand"><h1>Painel de Leads</h1><span>MK Uniformes · FECOIMP 2026</span></div>
+    <div class="actions">
+      <span class="stamp" id="stamp">nenhum dado carregado</span>
+      <button id="btnRefresh" class="primary">Atualizar dados</button>
+      <button id="btnExport">Exportar CSV</button>
+      <button id="btnSource">Fonte</button>
+      <button id="btnClearData">Limpar dados</button>
+    </div>
+  </div>
+
+  <div class="msg" id="msg"></div>
+
+  <div class="source" id="sourceBox">
+    <h3>Fonte de dados</h3>
+    <p>Arraste o CSV exportado do Inlead, ou configure o endpoint que o botão "Atualizar dados" vai consultar.</p>
+    <div class="drop" id="drop">Clique aqui ou arraste o arquivo CSV<input type="file" id="file" accept=".csv,text/csv" hidden></div>
+    <div class="row">
+      <input type="url" id="endpoint" placeholder="https://… endpoint que devolve JSON ou CSV">
+      <button id="btnSaveEndpoint">Salvar endpoint</button>
+    </div>
+
+    <div class="gen">
+      <h3>Links por tablet</h3>
+      <p>Cada aparelho precisa do seu próprio link. É o que permite separar tablet por tablet no painel.</p>
+      <div class="row">
+        <input type="url" id="baseUrl" placeholder="https://seu-funil.inlead…  (URL publicada do funil)">
+        <input type="text" id="etiquetas" placeholder="tablet-01, tablet-02, tablet-03" style="flex:1;min-width:190px">
+        <button id="btnGerar">Gerar links</button>
+      </div>
+      <div id="links"></div>
+    </div>
+  </div>
+
+  <div class="cards" id="cards"></div>
+
+  <div class="split">
+    <div class="bd">
+      <h3>Por dispositivo</h3>
+      <p class="hint" id="hintDisp">Clique para filtrar</p>
+      <div id="bdDisp"></div>
+    </div>
+    <div class="bd">
+      <h3>Por campanha</h3>
+      <p class="hint">Clique para filtrar</p>
+      <div id="bdCamp"></div>
+    </div>
+  </div>
+
+  <div class="filters">
+    <input type="text" id="q" placeholder="Buscar por nome, empresa ou cidade…">
+    <select id="fStatus"><option value="">Todos os status</option><option>Completo</option><option>Parcial</option><option>Abandonou</option></select>
+    <select id="fSeg"><option value="">Todos os segmentos</option></select>
+    <select id="fDisp"><option value="">Todos os dispositivos</option></select>
+    <select id="fCamp"><option value="">Todas as campanhas</option></select>
+    <button class="clear" id="btnClear">limpar filtros</button>
+  </div>
+
+  <div class="tablebox">
+    <div class="scroll">
+      <table>
+        <thead><tr>
+          <th data-k="created">Data <span class="ar">↕</span></th>
+          <th data-k="nome">Nome <span class="ar">↕</span></th>
+          <th data-k="empresa">Empresa <span class="ar">↕</span></th>
+          <th data-k="cidade">Cidade <span class="ar">↕</span></th>
+          <th data-k="segmento">Segmento <span class="ar">↕</span></th>
+          <th data-k="volume">Uniformizados <span class="ar">↕</span></th>
+          <th data-k="aceitacao">Aceitação <span class="ar">↕</span></th>
+          <th data-k="dispositivo">Dispositivo <span class="ar">↕</span></th>
+          <th data-k="campanha">Campanha <span class="ar">↕</span></th>
+          <th data-k="status">Status <span class="ar">↕</span></th>
+        </tr></thead>
+        <tbody id="tbody"></tbody>
+      </table>
+    </div>
+    <div class="empty" id="empty">Sem dados. Carregue um CSV ou configure o endpoint.</div>
+  </div>
+</div>
+
+<div class="overlay" id="overlay"></div>
+<aside class="panel" id="panel">
+  <div class="ph"><h2 id="pTitle">—</h2><button id="pClose">Fechar</button></div>
+  <div class="pb" id="pBody"></div>
+</aside>
+
+<script>
+/* ===== MAPEAMENTO (ajuste aqui se o Inlead mudar os IDs) ===== */
+const MAP = {
+  code:'code', created:'created_at',
+  iniciou:'button: quero_participar',
+  segmento:'options: area_negocio',
+  volume:'options: quantidade_pessoa',
+  cores:'options: cor_uniforme',
+  pecas:'options: modelo_uniforme',
+  aceitacao:'options: proposta_aceitacao',
+  barreira:'options: barreira_negocio',
+  dificuldade:'options: dificuldade_compra',
+  frequencia:'options: frequencia_compra',
+  nome:'field: tcM059', empresa:'field: iqe078', cidade:'field: 3y5l81', whatsapp:'field: Wq6U92',
+  enviou:'button: enviar_webhook', voucher:'button: MoT5O2',
+  tracking:'tracking'
+};
+const VOL_ORD={'1 a 10':1,'11 a 40':2,'41 a 100':3,'101 a 300':4,'Mais de 300':5,'+300':5};
+const DDD_OK=new Set([11,12,13,14,15,16,17,18,19,21,22,24,27,28,31,32,33,34,35,37,38,41,42,43,44,45,46,47,48,49,51,53,54,55,61,62,63,64,65,66,67,68,69,71,73,74,75,77,79,81,82,83,84,85,86,87,88,89,91,92,93,94,95,96,97,98,99]);
+
+/* ===== CSV ===== */
+function parseCSV(txt){
+  txt=txt.replace(/^\uFEFF/,'');
+  const rows=[]; let row=[],cur='',q=false;
+  for(let i=0;i<txt.length;i++){
+    const c=txt[i];
+    if(q){ if(c==='"'){ if(txt[i+1]==='"'){cur+='"';i++;} else q=false; } else cur+=c; }
+    else{
+      if(c==='"') q=true;
+      else if(c===','){ row.push(cur); cur=''; }
+      else if(c==='\n'){ row.push(cur); rows.push(row); row=[]; cur=''; }
+      else if(c!=='\r') cur+=c;
+    }
+  }
+  if(cur!==''||row.length){ row.push(cur); rows.push(row); }
+  if(!rows.length) return [];
+  const head=rows[0].map(h=>h.trim());
+  return rows.slice(1).filter(r=>r.some(v=>v.trim()!=='')).map(r=>{
+    const o={}; head.forEach((h,i)=>o[h]=(r[i]||'').trim()); return o;
+  });
+}
+
+/* ===== HELPERS ===== */
+const $=id=>document.getElementById(id);
+// resolve o campo aceitando tanto o cabeçalho do CSV ("options: area_negocio")
+// quanto a chave crua do webhook ("area_negocio"), em qualquer caixa
+const _cacheChaves=new WeakMap();
+function indexar(raw){
+  let ix=_cacheChaves.get(raw);
+  if(ix) return ix;
+  ix={};
+  for(const k in raw){
+    const limpo=k.replace(/^(options|field|button)\s*:\s*/i,'').trim().toLowerCase();
+    if(!(limpo in ix)) ix[limpo]=raw[k];
+    ix[k.trim().toLowerCase()]=raw[k];
+  }
+  _cacheChaves.set(raw,ix);
+  return ix;
+}
+function pick(raw,k){
+  const alvo=MAP[k];
+  let v=raw[alvo];
+  if(v===undefined){
+    const ix=indexar(raw);
+    const bare=alvo.replace(/^(options|field|button)\s*:\s*/i,'').trim().toLowerCase();
+    v = ix[alvo.toLowerCase()] ?? ix[bare];
+  }
+  if(v===undefined||v===null) return '';
+  if(typeof v==='object') return '';
+  return String(v).trim();
+}
+function multi(v){ return v? v.split('|').map(s=>s.trim()).filter(Boolean):[]; }
+function parseData(s){
+  const m=/^(\d{2})\/(\d{2})\/(\d{4})[ ,]+(\d{2}):(\d{2})(?::(\d{2}))?/.exec(s||'');
+  return m? new Date(+m[3],+m[2]-1,+m[1],+m[4],+m[5],+(m[6]||0)) : null;
+}
+function telefone(v){
+  const d=(v||'').replace(/\D/g,'');
+  if(!d) return {raw:v,dig:'',suspeito:false,vazio:true};
+  let s=false;
+  if(d.length<10||d.length>13) s=true;
+  if(/^(\d)\1+$/.test(d)) s=true;
+  const nac=(d.length>11&&d.startsWith('55'))?d.slice(2):d;
+  if(nac.length>=10&&!DDD_OK.has(+nac.slice(0,2))) s=true;
+  if(/^0/.test(nac)) s=true;
+  return {raw:v,dig:d,suspeito:s,vazio:false};
+}
+function parseTracking(v,raw){
+  if(v&&typeof v==='object'&&!Array.isArray(v)) return v;
+  const o={};
+  String(v||'').split('|').forEach(p=>{ const i=p.indexOf(':'); if(i>0) o[p.slice(0,i).trim()]=p.slice(i+1).trim(); });
+  // se o webhook mandar utm/platform como campos soltos, aproveita
+  if(raw){ const ix=indexar(raw);
+    ['utm_source','utm_medium','utm_campaign','utm_content','utm_term','fbclid','platform','screen','userAgent'].forEach(k=>{
+      if(!o[k] && ix[k.toLowerCase()]!==undefined && typeof ix[k.toLowerCase()]!=='object') o[k]=String(ix[k.toLowerCase()]).trim();
+    });
+  }
+  return o;
+}
+// dispositivo considera SOMENTE o campo platform
+function rotuloAparelho(t){
+  const pf=(t.platform||'').trim();
+  if(!pf) return 'Desconhecido';
+  if(/^iPhone/i.test(pf)) return 'iPhone';
+  if(/^iPad/i.test(pf)) return 'iPad';
+  if(/^Mac/i.test(pf)) return 'Mac / iPad';
+  if(/^Win/i.test(pf)) return 'Windows';
+  if(/^Linux\s*(arm|aarch)/i.test(pf)) return 'Android';
+  if(/^Android/i.test(pf)) return 'Android';
+  if(/^Linux/i.test(pf)) return 'Linux';
+  return pf;
+}
+// utm_source que indicam link do estande — só nesses casos utm_content é etiqueta de tablet.
+// Em anúncio do Meta, utm_content vem com o ID do criativo e NÃO identifica aparelho.
+const ORIGENS_ESTANDE=['estande','feira','fecoimp','tablet','qrcode','balcao'];
+function classificar(t){
+  const src=(t.utm_source||'').toLowerCase();
+  const doEstande=ORIGENS_ESTANDE.includes(src);
+  const etiqueta = doEstande ? (t.utm_content||t.utm_term||'') : '';
+  const aparelho = rotuloAparelho(t);
+  const digital = (t.platform||'').trim() || '__sem_plataforma';
+  let campanha, campanhaChave;
+  if(t.utm_campaign){
+    campanhaChave=t.utm_campaign;
+    campanha=(t.utm_source?t.utm_source+' · ':'')+t.utm_campaign;
+  } else if(doEstande){ campanhaChave='__estande'; campanha='Estande / QR code'; }
+  else if(t.fbclid){ campanhaChave='__meta'; campanha='Meta Ads (sem UTM)'; }
+  else { campanhaChave='__direto'; campanha='Direto / não rastreado'; }
+  return {
+    dispositivo: etiqueta || aparelho,
+    dispositivoChave: etiqueta || digital,
+    dispositivoIdentificado: !!etiqueta,
+    aparelho,
+    campanha, campanhaChave,
+    plataforma: (t.platform||'').trim(), tela: t.screen||'',
+    origem: t.utm_source||'', meio: t.utm_medium||'', criativo: t.utm_content||'', meta: !!t.fbclid
+  };
+}
+
+/* ===== NORMALIZAÇÃO ===== */
+function derivar(l){
+  l.tel=telefone(l.whatsapp);
+  l.volNum=VOL_ORD[l.volume]||0;
+  const temResposta=!!(l.segmento||l.volume||l.cores.length||l.pecas.length||l.aceitacao||l.frequencia||l.dificuldade.length);
+  const temContato=!!(l.nome||l.empresa||!l.tel.vazio);
+  l.status=temContato?'Completo':(temResposta?'Parcial':'Abandonou');
+  return l;
+}
+function normalizar(raw){
+  const t=parseTracking(raw[MAP.tracking]!==undefined?raw[MAP.tracking]:pick(raw,'tracking'), raw);
+  const l={
+    code:pick(raw,'code'), createdRaw:pick(raw,'created'), created:parseData(pick(raw,'created')),
+    segmento:pick(raw,'segmento'), volume:pick(raw,'volume'),
+    cores:multi(pick(raw,'cores')), pecas:multi(pick(raw,'pecas')),
+    aceitacao:pick(raw,'aceitacao'), barreira:pick(raw,'barreira'),
+    dificuldade:multi(pick(raw,'dificuldade')), frequencia:pick(raw,'frequencia'),
+    nome:pick(raw,'nome'), empresa:pick(raw,'empresa'), cidade:pick(raw,'cidade'), whatsapp:pick(raw,'whatsapp'),
+    enviou:pick(raw,'enviou')==='clicked', voucher:pick(raw,'voucher')==='clicked', iniciou:pick(raw,'iniciou')==='clicked'
+  };
+  Object.assign(l,classificar(t));
+  return derivar(l);
+}
+const CAMPOS_IDENT=['nome','empresa','whatsapp','cidade'];
+function merge(a,b){
+  const o={...a};
+  const conflitos=new Set(a.conflitos||[]);
+  for(const k in b){
+    const nv=b[k],ov=o[k];
+    if(k==='conflitos') continue;
+    if(Array.isArray(nv)){ if(nv.length) o[k]=nv; }
+    else if(typeof nv==='boolean'){ o[k]=ov||nv; }
+    else if(nv!==''&&nv!=null){
+      if(ov===''||ov==null) o[k]=nv;
+      else if(CAMPOS_IDENT.includes(k) && String(ov).trim().toLowerCase()!==String(nv).trim().toLowerCase()) conflitos.add(k);
+    }
+  }
+  o.conflitos=[...conflitos];
+  return o;
+}
+function agrupar(brutos){
+  const m=new Map();
+  brutos.forEach(r=>{
+    const l=normalizar(r); if(!l.code) return;
+    m.set(l.code, m.has(l.code)? derivar(merge(m.get(l.code),l)) : l);
+  });
+  return [...m.values()];
+}
+
+/* ===== ESTADO ===== */
+let LEADS=[], sortK='created', sortDir=-1;
+function setMsg(t,tipo){ const m=$('msg'); if(!t){m.className='msg';return;} m.textContent=t; m.className='msg on '+(tipo||''); }
+function salvar(){ try{ localStorage.setItem('fecoimp_leads2',JSON.stringify(LEADS)); localStorage.setItem('fecoimp_stamp2',new Date().toISOString()); }catch(e){} }
+function carregarLocal(){ try{
+  const d=localStorage.getItem('fecoimp_leads2');
+  if(d){ LEADS=JSON.parse(d).map(l=>{l.created=l.created?new Date(l.created):null;return l;});
+    const st=localStorage.getItem('fecoimp_stamp2');
+    $('stamp').textContent= st? 'atualizado '+new Date(st).toLocaleString('pt-BR'):''; }
+  const ep=localStorage.getItem('fecoimp_endpoint'); if(ep) $('endpoint').value=ep;
+  const bu=localStorage.getItem('fecoimp_base'); if(bu) $('baseUrl').value=bu;
+  const et=localStorage.getItem('fecoimp_etq'); if(et) $('etiquetas').value=et;
+}catch(e){} }
+function ingerir(brutos,origem){
+  if(!brutos.length){ setMsg('A fonte não devolveu registros.','err'); return; }
+  LEADS=agrupar(brutos);
+  LEADS.sort((a,b)=>(b.created?.getTime()||0)-(a.created?.getTime()||0));
+  salvar();
+  $('stamp').textContent='atualizado '+new Date().toLocaleString('pt-BR');
+  setMsg(LEADS.length+' leads carregados via '+origem+'.','ok'); setTimeout(()=>setMsg(''),4000);
+  render();
+}
+
+/* ===== RENDER ===== */
+function esc(s){ return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function card(n,l,s){ return `<div class="card"><div class="n">${n}</div><div class="l">${l}</div>${s?`<div class="s">${s}</div>`:''}</div>`; }
+
+function contar(lista,campoChave,campoRotulo){
+  const m=new Map();
+  lista.forEach(l=>{
+    const k=l[campoChave]||'—', r=l[campoRotulo]||'—';
+    if(!m.has(k)) m.set(k,{rotulo:r,total:0,completos:0});
+    const o=m.get(k); o.total++; if(l.status==='Completo') o.completos++;
+  });
+  const saida=[...m.entries()].map(([k,v])=>({chave:k,...v})).sort((a,b)=>b.total-a.total);
+  const vistos={};
+  saida.forEach(d=>{ vistos[d.rotulo]=(vistos[d.rotulo]||0)+1; });
+  const cont={};
+  saida.forEach(d=>{ if(vistos[d.rotulo]>1){ cont[d.rotulo]=(cont[d.rotulo]||0)+1; d.rotulo=d.rotulo+' #'+cont[d.rotulo]; } });
+  return saida;
+}
+function barras(dados,alvoId,filtroSelect,chaveFiltro){
+  const max=Math.max(1,...dados.map(d=>d.total));
+  const sel=$(filtroSelect).value;
+  $(alvoId).innerHTML = dados.length? dados.map(d=>`
+    <div class="brow ${sel===d.chave?'sel':''}" data-f="${esc(d.chave)}">
+      <div class="bname" title="${esc(d.rotulo)}">${esc(d.rotulo)}</div>
+      <div class="btrack"><div class="bfill" style="width:${Math.round(d.total/max*100)}%"></div></div>
+      <div class="bnum">${d.total} <small>/ ${d.completos}</small></div>
+    </div>`).join('') : '<div class="dim" style="font-size:13px">sem dados</div>';
+  [...$(alvoId).querySelectorAll('.brow')].forEach(el=>el.onclick=()=>{
+    const v=el.dataset.f;
+    $(filtroSelect).value = ($(filtroSelect).value===v)?'':v;
+    render();
+  });
+}
+
+function render(){
+  // opções de filtro
+  const opc=(id,vals,label)=>{ const s=$(id),a=s.value;
+    s.innerHTML=`<option value="">${label}</option>`+vals.map(v=>`<option value="${esc(v.chave)}">${esc(v.rotulo)}</option>`).join('');
+    s.value=a; };
+  const segs=[...new Set(LEADS.map(l=>l.segmento).filter(Boolean))].sort().map(s=>({chave:s,rotulo:s}));
+  const disp=contar(LEADS,'dispositivoChave','dispositivo');
+  const camp=contar(LEADS,'campanhaChave','campanha');
+  opc('fSeg',segs,'Todos os segmentos');
+  opc('fDisp',disp,'Todos os dispositivos');
+  opc('fCamp',camp,'Todas as campanhas');
+
+  // resumo
+  const t=LEADS.length, comp=LEADS.filter(l=>l.status==='Completo').length,
+        parc=LEADS.filter(l=>l.status==='Parcial').length, aband=LEADS.filter(l=>l.status==='Abandonou').length,
+        cert=LEADS.filter(l=>l.aceitacao==='Certamente compraria').length,
+        talv=LEADS.filter(l=>l.aceitacao==='Talvez').length,
+        nao=LEADS.filter(l=>l.aceitacao==='Não compraria').length,
+        susp=LEADS.filter(l=>l.tel.suspeito).length,
+        col=LEADS.filter(l=>l.conflitos&&l.conflitos.length).length,
+        tx=t?Math.round(comp/t*100):0;
+  $('cards').innerHTML=[
+    card(t,'respostas totais',''),
+    card(comp,'completos',tx+'% de conclusão'),
+    card(parc,'parciais','sem contato'),
+    card(aband,'abandonos','só abriram'),
+    card(disp.length,'dispositivos',''),
+    card(cert,'certamente compraria',talv+' talvez · '+nao+' não'),
+    susp?card(susp,'contatos suspeitos','verificar antes de disparar'):'',
+    col?card(col,'possíveis colisões','dois visitantes no mesmo registro'):''
+  ].join('');
+
+  // aviso de identificação de dispositivo
+  const naoIdent=disp.filter(d=>{ const l=LEADS.find(x=>x.dispositivoChave===d.chave); return l&&!l.dispositivoIdentificado; }).length;
+  $('hintDisp').innerHTML = naoIdent
+    ? 'Clique para filtrar · <span style="color:var(--warn)">'+naoIdent+' sem etiqueta — identificados por modelo e tela</span>'
+    : 'Clique para filtrar · todos etiquetados por utm_content';
+
+  barras(disp,'bdDisp','fDisp','dispositivoChave');
+  barras(camp,'bdCamp','fCamp','campanhaChave');
+
+  // filtros
+  const q=$('q').value.trim().toLowerCase(), fst=$('fStatus').value, fsg=$('fSeg').value, fd=$('fDisp').value, fc=$('fCamp').value;
+  let lista=LEADS.filter(l=>{
+    if(fst&&l.status!==fst) return false;
+    if(fsg&&l.segmento!==fsg) return false;
+    if(fd&&l.dispositivoChave!==fd) return false;
+    if(fc&&l.campanhaChave!==fc) return false;
+    if(q&&!((l.nome+' '+l.empresa+' '+l.cidade).toLowerCase().includes(q))) return false;
+    return true;
+  });
+  lista.sort((a,b)=>{
+    let x=a[sortK],y=b[sortK];
+    if(sortK==='created'){x=a.created?.getTime()||0;y=b.created?.getTime()||0;}
+    if(sortK==='volume'){x=a.volNum;y=b.volNum;}
+    if(typeof x==='string'){x=x.toLowerCase();y=(y||'').toLowerCase();}
+    return x<y?-1*sortDir:x>y?1*sortDir:0;
+  });
+
+  $('empty').style.display=lista.length?'none':'block';
+  $('tbody').innerHTML=lista.map(l=>`<tr data-c="${esc(l.code)}">
+    <td>${l.created?l.created.toLocaleString('pt-BR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}):'<span class="dim">—</span>'}</td>
+    <td>${l.nome?esc(l.nome):'<span class="dim">—</span>'}</td>
+    <td>${l.empresa?esc(l.empresa):'<span class="dim">—</span>'}</td>
+    <td>${l.cidade?esc(l.cidade):'<span class="dim">—</span>'}</td>
+    <td>${l.segmento?esc(l.segmento):'<span class="dim">—</span>'}</td>
+    <td>${l.volume?esc(l.volume):'<span class="dim">—</span>'}</td>
+    <td>${l.aceitacao?esc(l.aceitacao):'<span class="dim">—</span>'}</td>
+    <td><span class="tagmini">${esc(l.dispositivo)}</span></td>
+    <td><span class="tagmini">${esc(l.campanha)}</span></td>
+    <td><span class="pill st-${l.status.toLowerCase()}">${l.status}</span>${l.tel.suspeito?'<span class="flag">TEL?</span>':''}${(l.conflitos&&l.conflitos.length)?'<span class="flag">COLISÃO</span>':''}</td>
+  </tr>`).join('');
+  [...$('tbody').querySelectorAll('tr')].forEach(tr=>tr.onclick=()=>abrir(tr.dataset.c));
+}
+
+function abrir(code){
+  const l=LEADS.find(x=>x.code===code); if(!l) return;
+  $('pTitle').textContent=l.nome||l.empresa||('Lead '+l.code);
+  const d=(t,v)=>`<dt>${t}</dt><dd>${v||'<span class="dim">não respondeu</span>'}</dd>`;
+  const chips=a=>a.length?`<div class="chips">${a.map(x=>`<span class="chip">${esc(x)}</span>`).join('')}</div>`:'';
+  const wa=l.tel.dig&&!l.tel.suspeito?`<a class="wa" target="_blank" rel="noopener" href="https://api.whatsapp.com/send?phone=${l.tel.dig.length>11?l.tel.dig:'55'+l.tel.dig}">Abrir no WhatsApp</a>`:'';
+  $('pBody').innerHTML=`
+    <div style="margin-bottom:14px"><span class="pill st-${l.status.toLowerCase()}">${l.status}</span></div>
+    ${(l.conflitos&&l.conflitos.length)?`<div style="background:var(--bad-bg);color:var(--bad);border-radius:8px;padding:10px 12px;font-size:13px;margin-bottom:14px"><strong>Possível colisão de registro.</strong> Chegaram valores diferentes para: ${esc(l.conflitos.join(', '))}. Pode ser o mesmo <code>code</code> reaproveitado por dois visitantes no mesmo aparelho.</div>`:''}
+    <dl class="dl">
+      ${d('Empresa',esc(l.empresa))}${d('Cidade',esc(l.cidade))}
+      ${d('WhatsApp', l.tel.vazio?'':esc(l.whatsapp)+(l.tel.suspeito?'<span class="flag">SUSPEITO</span>':''))}
+      ${wa}
+    </dl>
+    <dl class="dl">
+      ${d('Segmento',esc(l.segmento))}${d('Uniformizados',esc(l.volume))}
+      ${d('Peças em uso',chips(l.pecas))}${d('Cores',chips(l.cores))}
+      ${d('Frequência de compra',esc(l.frequencia))}${d('Dificuldade hoje',chips(l.dificuldade))}
+      ${d('Aceitação',esc(l.aceitacao))}${d('Barreira',esc(l.barreira))}
+    </dl>
+    <dl class="dl">
+      ${d('Dispositivo', esc(l.dispositivo)+(l.dispositivoIdentificado?'':' <span class="dim">(sem etiqueta)</span>'))}
+      ${d('Aparelho', esc(l.aparelho)+(l.plataforma?' <span class="dim">('+esc(l.plataforma)+')</span>':''))}
+      ${d('Campanha', esc(l.campanha))}
+      ${d('Origem / meio', esc([l.origem,l.meio].filter(Boolean).join(' · ')))}
+      ${l.criativo?d('Criativo / conteúdo','<code>'+esc(l.criativo)+'</code>'):''}
+      ${d('Pediu o voucher', l.voucher?'Sim':'Não')}
+      ${d('Registrado em', esc(l.createdRaw))}${d('ID','<code>'+esc(l.code)+'</code>')}
+    </dl>`;
+  $('overlay').classList.add('on'); $('panel').classList.add('on');
+}
+function fechar(){ $('overlay').classList.remove('on'); $('panel').classList.remove('on'); }
+
+/* ===== FONTES ===== */
+function lerArquivo(f){
+  const r=new FileReader();
+  r.onload=()=>{ try{ ingerir(parseCSV(r.result),'arquivo CSV'); }catch(e){ setMsg('Não consegui ler esse CSV: '+e.message,'err'); } };
+  r.onerror=()=>setMsg('Falha ao abrir o arquivo.','err');
+  r.readAsText(f,'utf-8');
+}
+async function atualizar(){
+  const url=$('endpoint').value.trim();
+  if(!url){ setMsg('Nenhum endpoint configurado. Carregue um CSV ou informe a URL em "Fonte".','err'); $('sourceBox').style.display='block'; return; }
+  const b=$('btnRefresh'); b.disabled=true; b.textContent='Atualizando…';
+  try{
+    const res=await fetch(url,{cache:'no-store'});
+    if(!res.ok) throw new Error('HTTP '+res.status);
+    const txt=await res.text(), t=txt.trim();
+    let brutos;
+    if(t.startsWith('[')||t.startsWith('{')){ const j=JSON.parse(t); brutos=Array.isArray(j)?j:(j.data||j.rows||j.leads||[]); }
+    else brutos=parseCSV(t);
+    ingerir(brutos,'endpoint');
+  }catch(e){ setMsg('Não consegui atualizar: '+e.message+'. Os dados anteriores continuam na tela.','err'); }
+  finally{ b.disabled=false; b.textContent='Atualizar dados'; }
+}
+function exportar(){
+  if(!LEADS.length){ setMsg('Nada para exportar.','err'); return; }
+  const cols=['code','createdRaw','nome','empresa','cidade','whatsapp','telSuspeito','segmento','volume','pecas','cores','frequencia','dificuldade','aceitacao','barreira','status','dispositivo','aparelho','plataforma','campanha','origem','meio','criativo','voucher','colisao'];
+  const linhas=[cols.join(',')].concat(LEADS.map(l=>cols.map(c=>{
+    let v = c==='telSuspeito'? (l.tel.suspeito?'SIM':'') : c==='voucher'? (l.voucher?'SIM':'') : c==='colisao'? ((l.conflitos&&l.conflitos.length)?l.conflitos.join(' | '):'') : l[c];
+    if(Array.isArray(v)) v=v.join(' | ');
+    v=String(v??'');
+    return /[",\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v;
+  }).join(',')));
+  const blob=new Blob(['\uFEFF'+linhas.join('\n')],{type:'text/csv;charset=utf-8'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob); a.download='painel-fecoimp.csv'; a.click();
+  setTimeout(()=>URL.revokeObjectURL(a.href),2000);
+}
+
+/* ===== EVENTOS ===== */
+$('drop').onclick=()=>$('file').click();
+$('file').onchange=e=>{ if(e.target.files[0]) lerArquivo(e.target.files[0]); };
+['dragenter','dragover'].forEach(ev=>$('drop').addEventListener(ev,e=>{e.preventDefault();$('drop').classList.add('over');}));
+['dragleave','drop'].forEach(ev=>$('drop').addEventListener(ev,e=>{e.preventDefault();$('drop').classList.remove('over');}));
+$('drop').addEventListener('drop',e=>{ const f=e.dataTransfer.files[0]; if(f) lerArquivo(f); });
+$('btnRefresh').onclick=atualizar;
+$('btnExport').onclick=exportar;
+$('btnSource').onclick=()=>{ const b=$('sourceBox'); b.style.display=b.style.display==='none'?'block':'none'; };
+$('btnSaveEndpoint').onclick=()=>{ try{localStorage.setItem('fecoimp_endpoint',$('endpoint').value.trim());}catch(e){} setMsg('Endpoint salvo neste navegador.','ok'); setTimeout(()=>setMsg(''),3000); };
+$('btnClear').onclick=()=>{ ['q','fStatus','fSeg','fDisp','fCamp'].forEach(id=>$(id).value=''); render(); };
+$('btnClearData').onclick=()=>{
+  if(!confirm('Apagar os dados carregados neste navegador? O CSV original e a planilha não são afetados.')) return;
+  LEADS=[];
+  try{ localStorage.removeItem('fecoimp_leads2'); localStorage.removeItem('fecoimp_stamp2'); }catch(e){}
+  $('file').value='';
+  $('stamp').textContent='nenhum dado carregado';
+  ['q','fStatus','fSeg','fDisp','fCamp'].forEach(id=>$(id).value='');
+  $('sourceBox').style.display='block';
+  setMsg('Dados apagados. Pode enviar outro CSV.','ok'); setTimeout(()=>setMsg(''),4000);
+  render();
+};
+
+function gerarLinks(){
+  const base=$('baseUrl').value.trim();
+  if(!base){ setMsg('Informe a URL publicada do funil.','err'); return; }
+  let raiz;
+  try{ raiz=new URL(base); }catch(e){ setMsg('URL inválida. Comece com https://','err'); return; }
+  const etq=$('etiquetas').value.split(',').map(x=>x.trim()).filter(Boolean);
+  const lista=etq.length?etq:['tablet-01','tablet-02','tablet-03'];
+  $('links').innerHTML=lista.map(e=>{
+    const u=new URL(raiz.href);
+    u.searchParams.set('utm_source','estande');
+    u.searchParams.set('utm_medium','tablet');
+    u.searchParams.set('utm_content',e);
+    const href=u.toString();
+    return `<div class="lk"><b>${esc(e)}</b><code title="${esc(href)}">${esc(href)}</code><button data-u="${esc(href)}">Copiar</button></div>`;
+  }).join('');
+  [...$('links').querySelectorAll('button')].forEach(b=>b.onclick=async()=>{
+    try{ await navigator.clipboard.writeText(b.dataset.u); b.textContent='Copiado'; setTimeout(()=>b.textContent='Copiar',1500); }
+    catch(e){ setMsg('Não consegui copiar — selecione o link manualmente.','err'); }
+  });
+  try{ localStorage.setItem('fecoimp_base',base); localStorage.setItem('fecoimp_etq',$('etiquetas').value); }catch(e){}
+}
+$('btnGerar').onclick=gerarLinks;
+
+$('pClose').onclick=fechar; $('overlay').onclick=fechar;
+document.addEventListener('keydown',e=>{ if(e.key==='Escape') fechar(); });
+['q','fStatus','fSeg','fDisp','fCamp'].forEach(id=>$(id).addEventListener('input',render));
+document.querySelectorAll('th[data-k]').forEach(th=>th.onclick=()=>{
+  const k=th.dataset.k;
+  if(sortK===k) sortDir*=-1; else { sortK=k; sortDir=k==='created'?-1:1; }
+  render();
+});
+
+carregarLocal();
+render();
+</script>
+</body>
+</html>
